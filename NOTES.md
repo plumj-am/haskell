@@ -951,3 +951,101 @@ filter (\(x,y) -> x /= y) [(1,2),(2,2)]
 This example can we used to eliminate loops in the "directed graphs" example
 covered in video #4, according to the video. In this case, we are using it to
 remove tuples where the value of each element in a pair are the same.
+
+### Video #7 - Partial Function Application & Currying
+
+#### Currying
+
+Partial function application is a result of "currying".
+
+Currying is the principle which tells us, for example in the following:
+
+```haskell
+f :: a -> b -> c -> d
+```
+
+The function takes 3 arguments and returns one value, we could rewrite it as:
+
+```haskell
+f :: a -> (b -> (c -> d))
+```
+
+Which tells us that instead, the function only takes one argument `a` and
+returns a new function `b` which takes only one argument `c` which then returns
+the final value `d`.
+
+Functions that have more than 1 argument don't actually exist. Functions only
+take 1 argument and then return another function or the end result. This is
+broken down more clearly in the following example which shows how we can use
+currying to rewrite functions:
+
+```haskell
+add :: Int -> Int -> Int
+add x y = x+y
+
+
+add :: Int -> Int -> Int
+add x = (\y -> x+y)
+
+add :: Int -> Int -> Int
+add = (\x -> (\y -> x+y))
+```
+
+All of the 3 function definitions are equivalent.
+
+#### Partial Function Application
+
+In the 3rd definition above, we can guess that based on how languages typically
+work, the function needs 2 numbers to perform an addition, and so, we expect an
+error of some kind because we are only able to pass 1 `x`.
+
+```haskell
+add :: Int -> Int -> Int
+add = (\x -> (\y -> x+y))
+
+add 1 :: Int -> Int
+ => add (\y -> 1+y)
+```
+
+In Haskell it doesn't work this way because `add` implicitly only takes 1
+argument and instead a new function is returned. Where `x` was previously a free
+variable, it is now fixed as `1`.
+
+This displays how we can change the behaviour of functions and generate new
+functions from old ones. This is called "partial function application" and it is
+very common in functional programming.
+
+`map` is a prime example for a function which can be used in such a way.
+
+If we have a function called `doubleList` that we expect to double all the
+elements in a new list. We can use partial function application on map such that
+we only provide the first argument (the only real one), which is used to create
+the new list.
+
+```haskell
+map :: (a -> b) -> [a] -> [b]
+
+doubleList = map (\x -> 2*x)
+
+doubleList [1,2,3]
+  => [2,4,6]
+```
+
+`doubleList`'s type definition ends up looking like this:
+
+```haskell
+doubleList :: [a] -> [b]
+```
+
+`map (\x -> 2*x)` is a function that takes a list and returns another and it can
+be saved as a new function in `doubleList`.
+
+Using `map` normally would require passing both a function `(a -> b)` as well as
+the list `[a]` like this:
+
+```haskell
+map (\x -> 2*x) [1,2,3]
+  => [2,4,6]
+```
+
+We don't need an argument for `doubleList` because it gets it *implicitly*.
