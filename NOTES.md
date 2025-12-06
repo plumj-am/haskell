@@ -685,3 +685,117 @@ addTuples [(1,2), (2,3), (100,100)]
 --- [ (1+2), (2+3), (100+100) ]
   => [3,5,200]
 ```
+
+## Video #5 - List Exercises
+
+Don't worry about the `(Eq a)` type class yet, it will be covered later
+according to the video.
+
+### Exercise 1
+
+TODO: Tidy up this example and explain it better.
+
+Description:
+
+"Create a function `elem` that returns True if an element is in a given list and
+returns False otherwise."
+
+This function exists in Haskell.
+
+Solution:
+
+```haskell
+elem :: (Eq a) => a -> [a] -> Bool
+elem _ []     = False
+elem e (x:xs) = (e == x) || (elem e xs)
+```
+
+The wildcard `_` matches any element and returns false. We could name it but
+this way it is clearly shown that the value is irrelevant. If the list is empty,
+we return `False`.
+
+If there is element `x` in the list, we compare it to element `e` and if they
+are the same, we return `True`.If they are not the same `elem` is called again
+with the current `e` and the rest of the list `xs`.
+
+### Exercise 2
+
+Description:
+
+"Create a function `nub` that removes all duplicates from a given list."
+
+This function exists in Haskell.
+
+Solution:
+
+```haskell
+nub :: (Eq a) => [a] -> [a]
+nub [] = []
+nub (x:xs)
+  | x `elem` xs = nub xs -- Or elem x xs -- Here we use infix notation that we discussed earlier.
+  | otherwise   = x : nub xs
+```
+
+If the list is empty, return an empty list because there obviously is no
+duplicates.
+
+If the list contains data, we first check if `x` is an `elem` in `xs` and if it
+is we have a duplicate, so we don't add it to our recursive call. If the element
+is not a duplicate, we build a new list where `x` is prepended `:` to the
+recursive call `nub xs`.
+
+### Exercise 3
+
+Description:
+
+"Create a function `isAsc` that returns True if the list given to it is a list
+of ascending order."
+
+Solution:
+
+```haskell
+isAsc :: [Int] -> Bool
+isAsc []  = True
+isAsc [x] = True
+isAsc (x:y:xs) =
+  (x <= y) && isAsc (y:xs)
+```
+
+If there are no or one elements in the list, the list is in ascending order.
+
+Patterns can be finitely recursive so instead of needing to do `x:xs` and `x:xs`
+again, we can chain them with `x:y:xs` where `x` is the first element and `y` is
+the second element. So what we have is a list with at least 2 elements and the
+rest of the list `xs`. We compare the first 2 elements, check if they are
+ascending and if they are, we use the boolean `&&` to recursively call `isAsc`
+with the second element `y` and the tail of the list `xs`.
+
+### Exercise 4
+
+NOTE: I need to come back to this, it was way too confusing. I took the solution
+from the video anyway.
+
+Description:
+
+"Create a function `hasPath` that determines if a path from one node to another
+exists with a *directed* graph."
+
+Solution:
+
+```haskell
+hasPath :: [(Int, Int)] -> Int -> Int -> Bool
+hasPath [] x y = x == y
+hasPath xs x y
+  | x == y    = True
+  | otherwise =
+    let xs' = [ (n,m) | (n,m) <- xs, n /= x ] in
+    or [ hasPath xs' m y | (n,m) <- xs, n == x ]
+```
+
+The first argument is a list of the edges, second is the start node, third is
+the end node, and it returns `True` or `False` if their is a direct path or not.
+
+If we have no more paths `[]` we just have to check that the start node is equal
+to the end node `x == y`, if so a path exists between them.
+
+TODO: Finish describing the function.
