@@ -799,3 +799,155 @@ If we have no more paths `[]` we just have to check that the start node is equal
 to the end node `x == y`, if so a path exists between them.
 
 TODO: Finish describing the function.
+
+## Video #6 - Higher Order Functions & Anonymous Functions
+
+### Higher Order Functions
+
+```haskell
+app :: (a -> b) -> a -> b
+app f x = f x
+```
+
+Here we can see that the first argument to the function `app` is another
+function which is represented by the `()` which shows the first argument is
+expected to be a function that takes `a` and returns `b`.
+
+```haskell
+add1 :: Int -> Int
+add1 x = x+1
+app add1 1
+  => 2
+```
+
+### Anonymous Functions
+
+```haskell
+(\<args> -> <expr>)
+```
+
+Anonymous functions do not have a name when they are defined. This is nothing
+new, just highlighting that the meaning is the same as it other languages.
+
+They consist of a backslash `\`, a list of arguments `<args>` and and expression
+`<expr>`.
+
+A simple example of our `add1` function from earlier:
+
+```haskell
+(\x -> x+1)
+```
+
+Because functions are just values in Haskell, we can assign this anonymous
+function to a variable like this:
+
+```haskell
+add1 = (\x -> x+1)
+```
+
+An anonymous function with multiple arguments would look like this:
+
+```haskell
+(\x y z -> x+y+z)
+```
+
+The application of anonymous functions is shown below:
+
+```haskell
+(\x -> x+1) 1
+  => 2
+
+(\x y z => x+y+z) 1 2 3
+  => 6
+```
+
+So instead of something like `add1 1` or `sum3Nums`, we are instead replacing
+the function name with the anonymous function itself.
+
+### High Order + Anonymous Functions
+
+```haskell
+app :: (a -> b) -> a -> b
+app f x = f x
+
+app (\x -> x+1) 1
+  => 2
+```
+
+Here we've just replaced the `add1` function that we make earlier, with an
+anonymous function (see the start of the "Higher Order Functions" section).
+
+### Map
+
+Map is important to understand because it is frequently used in Haskell and is a
+good example of a HOF.
+
+```haskell
+map :: (a -> b) -> [a] -> [b]
+
+[a, b, ..., y,  z]
+ |  |       |   |
+[1, 2, ... n-1, n]
+```
+
+It maps a list of type `a` to a list of type `b`. It takes a function as it's
+first argument `(a -> b)` meaning it is a HOF. The function passed as the first
+argument is used to convert the list from type `a` to `b` and it's good to note
+that this type can change.
+
+Here is a simple example:
+
+```haskell
+map :: (a -> b) -> [a] -> [b]
+map (\x -> x+1) [1,2,3,4,5]
+  => [2,3,4,5,6]
+```
+
+Here is another example which is another way of handling the list comprehension
+approach we used previously (see around line 680 where we covered tuples) for a
+similar problem.
+
+```haskell
+map :: (a -> b) -> [a] -> [b]
+map (\(x,y) -> x+y) [(1,2),(2,3),(3,4)]
+  => [3,5,7]
+```
+
+The list of tuples are converted to a list of the sums of each tuple.
+
+To me these look very similar to closures.
+
+### Filter
+
+```haskell
+filter :: (a -> Bool) -> [a] -> [a]
+
+[1,2,3,4,5,6,7,8,9]
+     | | | | | | |
+    [3,4,5,6,7,8,9]
+```
+
+`filter` is used to filter a list of type `a` to a list of type `a`. It also
+takes a function as it's first argument and it is used to convert the list to a
+new list with values filtered out. Note that with `filter` the type of the list
+can not change. The function passed as an argument in this case is called a
+predicate. When the predicate returns `True` the element will be in the new
+list.
+
+```haskell
+filter :: (a -> Bool) -> [a] -> [a]
+filter (\x -> x > 2) [1,2,3,4,5,6,7,8,9]
+  => [3,4,5,6,7,8,9]
+```
+
+Here we filter out any numbers that are not `> 2`.
+
+```haskell
+filter :: (a -> Bool) -> [a] -> [a]
+filter (\(x,y) -> x /= y) [(1,2),(2,2)]
+  => [(1,2)]
+```
+
+This example can we used to eliminate loops in the "directed graphs" example
+covered in video #4, according to the video. In this case, we are using it to
+remove tuples where the value of each element in a pair are the same.
