@@ -91,7 +91,7 @@ int func(int arg) {
 }
 ```
 
-## Video 2 - Functions, Types, let and where
+## Video #2 - Functions, Types, let and where
 
 ### Functions
 
@@ -237,7 +237,7 @@ add 10 20   -- Is equivalent to...
 10 `add` 20 -- ...this.
 ```
 
-## Video 3 - Recursion, Guards, Patterns
+## Video #3 - Recursion, Guards, Patterns
 
 ### Recursion
 
@@ -368,7 +368,7 @@ hazy to me, need to learn more.
 Most algorithms in Haskell are recursive so it's important to understand
 recursion.
 
-## Video 4 - Lists and Tuples
+## Video #4 - Lists and Tuples
 
 Lists in Haskell can only be of 1 type (as it should be). For example:
 
@@ -1049,3 +1049,117 @@ map (\x -> 2*x) [1,2,3]
 ```
 
 We don't need an argument for `doubleList` because it gets it *implicitly*.
+
+## Video #8 - Function Composition
+
+### Dot Operator
+
+```haskell
+(.) :: (b -> c) -> (a -> b) -> a -> c
+```
+
+The dot operator takes 2 functions (`(b -> c)` and `(a -> b)`) and a value `a`
+as arguments and returns a value `c`.
+
+```haskell
+-- This is:
+(f . g)
+-- equivalent to:
+(\x -> f (g x))
+```
+
+In the example above `g` is applied first, `f` is applied second.
+
+This can be useful if we want to reverse an ascending sorted list (in that
+order):
+
+```haskell
+descSort = reverse . sort
+```
+
+With a simple composition, we can build a descending sort function. The example
+below shows 3 equivalent definitions to acheive the same thing.
+
+```haskell
+descSort = reverse . sort
+-- Can be written with the anonymous function:
+descSort = (\x -> reverse (sort x))
+-- Take the free variable `x` and add it to the argument list:
+descSort x = reverse (sort x)
+```
+
+Another practical example where we can build a 2-dimensional map from 2 existing
+1-dimensional maps:
+
+```haskell
+map2D :: (a -> b) -> [[a]] -> [[b]]
+map2D = map . map
+```
+
+If we did `map . map . map ...` N times we could create an N-dimensional map.
+It's a bit confusing so I'll again show equivalent definitions:
+
+```haskell
+map2D :: (a -> b) -> [[a]] -> [[b]]
+
+-- The default
+map2D = map . map
+
+-- Takes 2 anonymous functions that replace `map`.
+-- These functions take 2 arguments. A function `f1`/`f2` and a list `xs`/`ys`.
+map2D = (\f1 xs -> map f1 xs) . (\f2 ys -> map f2 ys)
+
+-- Equivalent of the dot `.` operator.
+map2D = (\x -> (\f1 xs -> map f1 xs) ((\f2 ys -> map f2 ys) x))
+
+-- Take the free variable `x` and add it to the argument list of `map2D`.
+map2D x = (\f1 xs -> map f1 xs) ((\f2 ys -> map f2 ys) x)
+
+-- We can replace `f2` with the argument `x` because `x` would be the first
+-- argument of the `f2` function so f2 is now removed.
+map2D x = (\f1 xs -> map f1 xs) (\ys -> map x ys)
+
+-- Now we can replace `f1` with the anonymous function because `f1` is exactly
+-- the function `(\f1 xs -> map f1 xs)`.
+map2D x = (\xs -> map (\ys -> map x ys) xs)
+
+-- Now the `xs` from the anonymous function can be moved to the argument list
+-- of `map2D`. `x` has been renamed to `f` because having a function in the
+-- argument list is better represented by `f`, `g` or `h`.
+map2D f xs = map (\ys -> map f ys) xs
+```
+
+Looking back on it, this is even more confusing... But I'm sure it'll make sense
+soon.
+
+So we are left with a `map2D` function that takes a function `f` as an argument
+and a list `xs`. For every element in `xs` we perform another mapping with the
+anonymous function using the `ys` that we get from the `xs`. For this to work
+`xs` *has* to be a list of lists.
+
+### Dollar Sign Operator
+
+This one is not really used for composition but for tidier syntax. It is
+basically the same function as when we had the higher order function example
+like this:
+
+```haskell
+app :: (a -> b) -> a -> b
+app f x = f x
+```
+
+The dollar sign `$` is used to apply a function `f` to a value `x`. For example,
+these 2 functions are equivalent:
+
+```haskell
+f xs = map (\x -> x+1) (filter (\x -> x>1) xs)
+
+f xs = map (\x -> x+1) $ filter (\x -> x>1) xs
+```
+
+In this example we are applying the `map` function to the value `xs`.
+
+While it may not seem useful, sometimes we need to do this multiple times and
+can end up with a massive amount of parentheses. In the example above, you can
+see that instead of needing parentheses around the `filter` we can instead use
+the dollar sign `$` syntax.
